@@ -1,0 +1,53 @@
+class Room:
+    def __init__(self, number, capacity, price, booked=False):
+        self.number = number
+        self.capacity = capacity
+        self.price = price
+        self.booked = booked
+
+class Hotel:
+    def __init__(self, name, rooms):
+        self.name = name
+        self.rooms = rooms
+
+    def display_available_rooms(self):
+        available_rooms = [room for room in self.rooms if not room.booked]
+        if available_rooms:
+            print("Available Rooms:")
+            for room in available_rooms:
+                print(f"Room {room.number} - Capacity: {room.capacity}, Price: ${room.price} per night")
+        else:
+            print("No rooms available.")
+
+    def book_room(self, room_number):
+        for room in self.rooms:
+            if room.number == room_number and not room.booked:
+                room.booked = True
+                print(f"Room {room_number} booked successfully.")
+                return
+        print("Room is not available or does not exist.")
+
+    def check_out(self, room_number):
+        for room in self.rooms:
+            if room.number == room_number and room.booked:
+                room.booked = False
+                print(f"Guest is checked out from Room {room_number}.")
+                return
+        print("Room isn't currently booked.")
+
+# Sample rooms:
+room1 = Room(101, 2, 100)
+room2 = Room(102, 4, 150)
+room3 = Room(103, 3, 120)
+
+hotel = Hotel("Wonderful Hotel", [room1, room2, room3])
+// EXAMPLE OF USE
+print("Welcome to", hotel.name)
+hotel.display_available_rooms()
+
+hotel.book_room(101)
+hotel.book_room(102)
+hotel.display_available_rooms()
+
+hotel.check_out(101)
+hotel.display_available_rooms()
