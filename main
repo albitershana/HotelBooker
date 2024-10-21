@@ -1,53 +1,350 @@
-class Room:
-    def __init__(self, number, capacity, price, booked=False):
-        self.number = number
-        self.capacity = capacity
-        self.price = price
-        self.booked = booked
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <unordered_map>
+#include <map>
+#include <ctime>
 
-class Hotel:
-    def __init__(self, name, rooms):
-        self.name = name
-        self.rooms = rooms
+const int LOYALTY_POINTS_THRESHOLD = 100;
+const double DISCOUNT_RATE = 0.1;
 
-    def display_available_rooms(self):
-        available_rooms = [room for room in self.rooms if not room.booked]
-        if available_rooms:
-            print("Available Rooms:")
-            for room in available_rooms:
-                print(f"Room {room.number} - Capacity: {room.capacity}, Price: ${room.price} per night")
-        else:
-            print("No rooms available.")
+class Room {
+private:
+    int roomNumber;
+    std::string roomType;
+    double pricePerNight;
+    bool isAvailable;
+    std::string amenities;
+    std::vector<std::string> bookingHistory;
+    std::vector<std::string> feedback;
 
-    def book_room(self, room_number):
-        for room in self.rooms:
-            if room.number == room_number and not room.booked:
-                room.booked = True
-                print(f"Room {room_number} booked successfully.")
-                return
-        print("Room is not available or does not exist.")
+public:
+    Room(int num, std::string type, double price, std::string amnt)
+        : roomNumber(num), roomType(type), pricePerNight(price), isAvailable(true), amenities(amnt) {}
 
-    def check_out(self, room_number):
-        for room in self.rooms:
-            if room.number == room_number and room.booked:
-                room.booked = False
-                print(f"Guest is checked out from Room {room_number}.")
-                return
-        print("Room isn't currently booked.")
+    void displayRoomDetails() const {
+        std::cout << "Room Number: " << roomNumber << "\n"
+             << "Type: " << roomType << "\n"
+             << "Price per Night: $" << std::fixed << std::setprecision(2) << pricePerNight << "\n"
+             << "Amenities: " << amenities << "\n"
+             << "Availability: " << (isAvailable ? "Available" : "Not Available") << "\n\n";
+    }
 
-# Sample rooms:
-room1 = Room(101, 2, 100)
-room2 = Room(102, 4, 150)
-room3 = Room(103, 3, 120)
+    bool checkAvailability(const std::string& startDate, const std::string& endDate) const {
+        return isAvailable;
+    }
 
-hotel = Hotel("Wonderful Hotel", [room1, room2, room3])
-// EXAMPLE OF USE
-print("Welcome to", hotel.name)
-hotel.display_available_rooms()
+    double calculatePrice(int duration) const {
+        return pricePerNight * duration;
+    }
 
-hotel.book_room(101)
-hotel.book_room(102)
-hotel.display_available_rooms()
+    void addBookingHistory(const std::string& customerName, const std::string& startDate, const std::string& endDate) {
+        bookingHistory.push_back("Booked by " + customerName + " from " + startDate + " to " + endDate);
+    }
 
-hotel.check_out(101)
-hotel.display_available_rooms()
+    void addFeedback(const std::string& customerFeedback) {
+        feedback.push_back(customerFeedback);
+    }
+
+    void displayBookingHistory() const {
+        std::cout << "Booking History for Room " << roomNumber << ":\n";
+        for (const auto& entry : bookingHistory) {
+            std::cout << entry << "\n";
+        }
+        std::cout << std::endl;
+    }
+
+    void displayFeedback() const {
+        std::cout << "Feedback for Room " << roomNumber << ":\n";
+        for (const auto& entry : feedback) {
+            std::cout << entry << "\n";
+        }
+        std::cout << std::endl;
+    }
+
+    void setAvailability(bool available) {
+        isAvailable = available;
+    }
+
+    int getRoomNumber() const {
+        return roomNumber;
+    }
+};
+
+class Customer {
+private:
+    std::string name;
+    std::string contactInfo;
+    int bookedRoomNumber;
+    double totalBill;
+    int loyaltyPoints;
+
+public:
+    Customer() : name(""), contactInfo(""), bookedRoomNumber(-1), totalBill(0.0), loyaltyPoints(0) {}
+
+    Customer(std::string n, std::string contact, int roomNum, double bill = 0.0, int points = 0)
+        : name(n), contactInfo(contact), bookedRoomNumber(roomNum), totalBill(bill), loyaltyPoints(points) {}
+
+    void createBill(double roomPrice, int duration, double additionalCharges, double discount) {
+        totalBill = (roomPrice * duration + additionalCharges) * (1 - discount);
+        std::cout << "Bill for " << name << ":\n"
+             << "Room Number: " << bookedRoomNumber << "\n"
+             << "Total Amount: $" << std::fixed << std::setprecision(2) << totalBill << "\n";
+    }
+
+    void addLoyaltyPoints(int points) {
+        loyaltyPoints += points;
+    }
+
+    void displayLoyaltyPoints() const {
+        std::cout << "Loyalty Points for " << name << ": " << loyaltyPoints << "\n";
+    }
+
+    int getBookedRoomNumber() const {
+        return bookedRoomNumber;
+    }
+
+    int getLoyaltyPoints() const {
+        return loyaltyPoints;
+    }
+};
+
+class Hotel {
+private:
+    std::vector<Room> rooms;
+    std::unordered_map<std::string, Customer> guestDatabase;
+    std::map<int, std::string> roomCleaningSchedule;
+
+public:
+    Hotel() {
+        initializeRooms();
+        initializeCleaningSchedule();
+    }
+
+    void initializeRooms() {
+        rooms = {
+            {101, "Single", 60.0, "WiFi, TV"},
+            {102, "Double", 80.0, "WiFi, Breakfast"},
+            {103, "Suite", 150.0, "WiFi, Breakfast, Pool Access"},
+            {104, "Family", 120.0, "WiFi, Breakfast, Kitchenette"},
+            {105, "Single", 60.0, "WiFi, TV"},
+            {106, "Double", 80.0, "WiFi, Breakfast"},
+            {107, "Suite", 150.0, "WiFi, Breakfast, Pool Access"},
+            {108, "Family", 120.0, "WiFi, Breakfast, Kitchenette"},
+            {109, "Single", 60.0, "WiFi, TV"},
+            {110, "Double", 80.0, "WiFi, Breakfast"}
+        };
+    }
+
+    void initializeCleaningSchedule() {
+        roomCleaningSchedule = {
+            {101, "Monday"},
+            {102, "Tuesday"},
+            {103, "Wednesday"},
+            {104, "Thursday"},
+            {105, "Friday"},
+            {106, "Saturday"},
+            {107, "Sunday"},
+            {108, "Monday"},
+            {109, "Tuesday"},
+            {110, "Wednesday"}
+        };
+    }
+
+    void displayAvailableRooms() const {
+        std::cout << "Available Rooms:\n";
+        for (const auto& room : rooms) {
+            if (room.checkAvailability("", "")) {
+                room.displayRoomDetails();
+            }
+        }
+    }
+
+    bool bookRoom(int roomNumber, const std::string& startDate, const std::string& endDate, const std::string& customerName, const std::string& contactInfo) {
+        for (auto& room : rooms) {
+            if (room.getRoomNumber() == roomNumber && room.checkAvailability(startDate, endDate)) {
+                room.setAvailability(false); // Mark room as booked
+                guestDatabase[customerName] = Customer(customerName, contactInfo, roomNumber);
+                room.addBookingHistory(customerName, startDate, endDate);
+                std::cout << "Room " << roomNumber << " has been booked successfully for " << customerName << ".\n";
+                return true;
+            }
+        }
+        std::cout << "Room " << roomNumber << " is not available for the selected dates.\n";
+        return false;
+    }
+
+    void generateBill(const std::string& customerName, int duration, double additionalCharges) {
+        auto it = guestDatabase.find(customerName);
+        if (it != guestDatabase.end()) {
+            Customer& customer = it->second;
+            for (const auto& room : rooms) {
+                if (room.getRoomNumber() == customer.getBookedRoomNumber()) {
+                    double discount = (customer.getLoyaltyPoints() >= LOYALTY_POINTS_THRESHOLD) ? DISCOUNT_RATE : 0.0;
+                    customer.createBill(room.calculatePrice(duration), duration, additionalCharges, discount);
+                    customer.addLoyaltyPoints(duration * 10); // 10 points per night
+                    return;
+                }
+            }
+        } else {
+            std::cout << "Customer " << customerName << " not found.\n";
+        }
+    }
+
+    void leaveFeedback(const std::string& customerName, const std::string& feedback) {
+        auto it = guestDatabase.find(customerName);
+        if (it != guestDatabase.end()) {
+            Customer& customer = it->second;
+            for (auto& room : rooms) {
+                if (room.getRoomNumber() == customer.getBookedRoomNumber()) {
+                    room.addFeedback(feedback);
+                    std::cout << "Feedback submitted successfully.\n";
+                    return;
+                }
+            }
+        } else {
+            std::cout << "Customer " << customerName << " not found.\n";
+        }
+    }
+
+    void displayRoomBookingHistory(int roomNumber) const {
+        for (const auto& room : rooms) {
+            if (room.getRoomNumber() == roomNumber) {
+                room.displayBookingHistory();
+                return;
+            }
+        }
+        std::cout << "Room " << roomNumber << " not found.\n";
+    }
+
+    void displayRoomFeedback(int roomNumber) const {
+        for (const auto& room : rooms) {
+            if (room.getRoomNumber() == roomNumber) {
+                room.displayFeedback();
+                return;
+            }
+        }
+        std::cout << "Room " << roomNumber << " not found.\n";
+    }
+
+    void displayCleaningSchedule() const {
+        std::cout << "Room Cleaning Schedule:\n";
+        for (const auto& entry : roomCleaningSchedule) {
+            std::cout << "Room " << entry.first << ": " << entry.second << "\n";
+        }
+        std::cout << std::endl;
+    }
+
+    bool validateDate(const std::string& date) const {
+        struct tm tm = {};
+        return strptime(date.c_str(), "%Y-%m-%d", &tm) != nullptr;
+    }
+};
+
+int main() {
+    Hotel hotel;
+    int choice;
+
+    do {
+        std::cout << "Welcome to the Hotel Management System\n";
+        std::cout << "1. View Available Rooms\n";
+        std::cout << "2. Book a Room\n";
+        std::cout << "3. Generate Bill\n";
+        std::cout << "4. Leave Feedback\n";
+        std::cout << "5. View Room Booking History\n";
+        std::cout << "6. View Room Feedback\n";
+        std::cout << "7. View Cleaning Schedule\n";
+        std::cout << "8. Exit\n";
+        std::cout << "Please choose an option: ";
+        std::cin >> choice;
+
+        switch (choice) {
+            case 1:
+                hotel.displayAvailableRooms();
+                break;
+            case 2: {
+                int roomNumber;
+                std::string startDate, endDate, customerName, contactInfo;
+
+                std::cout << "Enter Room Number to Book: ";
+                std::cin >> roomNumber;
+                std::cout << "Enter Check-in Date (YYYY-MM-DD): ";
+                std::cin >> startDate;
+                std::cout << "Enter Check-out Date (YYYY-MM-DD): ";
+                std::cin >> endDate;
+                std::cout << "Enter Customer Name: ";
+                std::cin.ignore();
+                std::getline(std::cin, customerName);
+                std::cout << "Enter Contact Info: ";
+                std::getline(std::cin, contactInfo);
+
+                if (hotel.validateDate(startDate) && hotel.validateDate(endDate)) {
+                    hotel.bookRoom(roomNumber, startDate, endDate, customerName, contactInfo);
+                } else {
+                    std::cout << "Invalid date format. Please use YYYY-MM-DD.\n";
+                }
+                break;
+            }
+            case 3: {
+                std::string customerName;
+                int duration;
+                double additionalCharges;
+
+                std::cout << "Enter Customer Name: ";
+                std::cin.ignore();
+                std::getline(std::cin, customerName);
+                std::cout << "Enter Duration of Stay (in nights): ";
+                std::cin >> duration;
+                std::cout << "Enter Additional Charges: ";
+                std::cin >> additionalCharges;
+
+                hotel.generateBill(customerName, duration, additionalCharges);
+                break;
+            }
+            case 4: {
+                std::string customerName, feedback;
+
+                std::cout << "Enter Customer Name: ";
+                std::cin.ignore();
+                std::getline(std::cin, customerName);
+                std::cout << "Enter Feedback: ";
+                std::getline(std::cin, feedback);
+
+                hotel.leaveFeedback(customerName, feedback);
+                break;
+            }
+            case 5: {
+                int roomNumber;
+
+                std::cout << "Enter Room Number to View Booking History: ";
+                std::cin >> roomNumber;
+
+                hotel.displayRoomBookingHistory(roomNumber);
+                break;
+            }
+            case 6: {
+                int roomNumber;
+
+                std::cout << "Enter Room Number to View Feedback: ";
+                std::cin >> roomNumber;
+
+                hotel.displayRoomFeedback(roomNumber);
+                break;
+            }
+            case 7:
+                hotel.displayCleaningSchedule();
+                break;
+            case 8:
+                std::cout << "Thank you for using the Hotel Management System. Goodbye!\n";
+                break;
+            default:
+                std::cout << "Invalid choice. Please try again.\n";
+                break;
+        }
+
+        std::cout << std::endl;
+    } while (choice != 8);
+
+    return 0;
+}
